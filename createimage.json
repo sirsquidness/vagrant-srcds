@@ -1,0 +1,65 @@
+{
+  "builders": [
+    {
+      "name":          "aws",
+      "type":          "amazon-ebs",
+      "source_ami":    "ami-6c14310f",
+      "associate_public_ip_address": true,
+      "region":        "ap-southeast-2",
+      "instance_type": "c4.large",
+      "subnet_id": "subnet-aa4f0fdd",
+      "security_group_id": "sg-791ff51d",
+      "ssh_username":  "ubuntu",
+      "ami_name":      "workshop {{timestamp}}",
+      "user_data_file": "userdata.yml",
+      "launch_block_device_mappings": [
+        { 
+         "device_name": "/dev/xvde",
+         "volume_size": 30,
+         "delete_on_termination": true
+        }
+       ]
+  },
+  {
+    "name": "vultr",
+ "type"              : "vultr",
+    "region"            : "Sydney",
+    "os"                : "Ubuntu 14.04 x64",
+    "plan"              : "2048 MB RAM,45 GB SSD,3.00 TB BW",
+    "private_networking": false,
+    "snapshot_name"     : "mysnapsnot-{{timestamp}}"   
+}
+
+
+
+  ],
+
+  "provisioners": [
+
+    {
+      "type":        "file",
+      "source":      "key.pub",
+      "destination": "/tmp/key.pub"
+    },
+
+    {
+      "type":            "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "scripts": [
+        "scripts/vagrant.sh"
+      ]
+    },
+    {
+      "type":            "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "scripts": [
+        "first_install.sh"
+      ]
+    }
+  ],
+
+  "post-processors": [{
+    "output": "builds/packer_{{.BuildName}}_{{.Provider}}.box",
+    "type":   "vagrant"
+  }]
+}
